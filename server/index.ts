@@ -1,25 +1,24 @@
-import Koa from 'koa'
-import Router from 'koa-router'
-import next from 'next'
+import Koa from 'koa';
+import Router from 'koa-router';
+import next from 'next';
 import createShopifyAuth, { verifyRequest } from "@shopify/koa-shopify-auth";
 import Shopify, { ApiVersion } from "@shopify/shopify-api";
-import dotenv from 'dotenv';
-
-dotenv.config()
+import config from 'config';
 
 const {
   PORT,
   NODE_ENV,
-  SHOPIFY_API_KEY,
-  SHOPIFY_API_SECRET,
-  SCOPES,
-  HOST
-} = process.env as any
+} = process.env as any;
+
+const SCOPES = `${config.SCOPES}`;
+const SHOPIFY_API_KEY = `${config.SHOPIFY_API_KEY}`;
+const SHOPIFY_API_SECRET = `${config.SHOPIFY_API_SECRET}`;
+const HOST = `${config.HOST}`;
 
 const port = parseInt(PORT, 10) || 8081;
-const dev = NODE_ENV !== 'production'
-const app = next({ dev })
-const handle = app.getRequestHandler()
+const dev = NODE_ENV !== 'production';
+const app = next({ dev });
+const handle = app.getRequestHandler();
 
 Shopify.Context.initialize({
     API_KEY: SHOPIFY_API_KEY,
@@ -47,8 +46,8 @@ const handleRequest = async (ctx: any) => {
 
 app.prepare().then(() => {
 
-    const server = new Koa()
-    const router = new Router()
+    const server = new Koa();
+    const router = new Router();
     server.keys = [Shopify.Context.API_SECRET_KEY];
     server.use(
       createShopifyAuth({
@@ -65,7 +64,7 @@ app.prepare().then(() => {
             topic: "APP_UNINSTALLED",
             webhookHandler: async (topic, shop, body) => {
               if (shop && ACTIVE_SHOPIFY_SHOPS[shop]) { 
-                delete ACTIVE_SHOPIFY_SHOPS[shop]
+                delete ACTIVE_SHOPIFY_SHOPS[shop];
               }
             },
           });
